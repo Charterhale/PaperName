@@ -1,0 +1,22 @@
+{
+  "name": "papername",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Automatically name scholarly PDF downloads by journal abbreviation, year and article title.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Charterhale/PaperName.git"
+  },
+  "scripts": {
+    "test": "node --test tests/core.test.cjs tests/runtime.test.cjs",
+    "test:browser": "node tests/browser.cjs",
+    "package": "python3 scripts/package.py"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "playwright": "^1.64.0"
+  }
+}

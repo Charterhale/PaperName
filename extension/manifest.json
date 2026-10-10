@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "PaperName · 文献 PDF 自动命名",
+  "version": "1.0.0",
+  "description": "下载文献 PDF 时，以期刊缩写、年份和文章标题自动命名。支持三种顺序及元数据纠正。",
+  "minimum_chrome_version": "102",
+  "permissions": ["downloads", "storage", "tabs"],
+  "host_permissions": ["http://*/*", "https://*/*"],
+  "background": {"service_worker": "background.js"},
+  "action": {"default_popup": "popup.html", "default_title": "PaperName · 文献命名", "default_icon": {"16": "icons/16.png", "48": "icons/48.png", "128": "icons/128.png"}},
+  "icons": {"16": "icons/16.png", "48": "icons/48.png", "128": "icons/128.png"},
+  "options_page": "popup.html",
+  "content_scripts": [{"matches": ["http://*/*", "https://*/*"], "js": ["lib/core.js", "lib/extract.js", "content.js"], "run_at": "document_idle", "all_frames": true}],
+  "content_security_policy": {"extension_pages": "script-src 'self'; object-src 'self'"}
+}
