@@ -1,12 +1,12 @@
-importScripts('lib/core.js');
+if (typeof importScripts === 'function') importScripts('lib/core.js', 'lib/platform.js', 'lib/download.js');
 'use strict';
-const C = PaperCore;
+const C = PaperCore, api = PaperPlatform.api, session = PaperPlatform.session;
 let serial = Promise.resolve(), journalIndex, nextApiTime = 0;
 const pendingLookups = new Map();
 function queue(job) {const task = serial.then(job, job); serial = task.catch(() => {}); return task;}
-async function settings() {return {...C.defaults, ...(await chrome.storage.local.get('settings')).settings};}
+async function settings() {return {...C.defaults, ...(await api.storage.local.get('settings')).settings};}
 async function index() {
-  journalIndex ||= fetch(chrome.runtime.getURL('data/journals.json')).then(r => r.json()).catch(() => ({titles: {}, issns: {}}));
+  journalIndex ||= fetch(api.runtime.getURL('data/journals.json')).then(r => r.json()).catch(() => ({titles: {}, issns: {}}));
   return journalIndex;
 }
 async function abbreviate(meta, config) {
@@ -30,7 +30,7 @@ async function apiJson(url) {
 }
 async function lookup(doi, pmid) {
   const key = doi ? 'doi:' + doi.toLowerCase() : 'pmid:' + pmid;
-  const cached = (await chrome.storage.local.get('metadataCache')).metadataCache || {};
+  const cached = (await api.storage.local.get('metadataCache')).metadataCache || {};
   if (cached[key] && Date.now() - cached[key].time < 30 * 86400000) return cached[key].meta;
   if (pendingLookups.has(key)) return pendingLookups.get(key);
   const job = (async () => {
@@ -47,10 +47,10 @@ async function lookup(doi, pmid) {
       meta = {pmid, title: C.clean(m.title), journal: C.clean(m.fulljournalname), abbreviation: C.clean(m.source), year: C.year(m.pubdate), issn: m.issn || m.essn || '', doi: m.articleids?.find(a => a.idtype === 'doi')?.value || ''};
     }
     await queue(async () => {
-      const current = (await chrome.storage.local.get('metadataCache')).metadataCache || {};
+      const current = (await api.storage.local.get('metadataCache')).metadataCache || {};
       current[key] = {meta, time: Date.now()};
       const entries = Object.entries(current).sort((a, b) => b[1].time - a[1].time).slice(0, 200);
-      await chrome.storage.local.set({metadataCache: Object.fromEntries(entries)});
+      await api.storage.local.set({metadataCache: Object.fromEntries(entries)});
     });
     return meta;
   })();
@@ -74,7 +74,7 @@ async function enrich(meta, config) {
 async function remember(message, sender) {
   if (!sender.tab || !/^https?:/.test(message.pageUrl || '')) return;
   await queue(async () => {
-    const stored = await chrome.storage.session.get(['contexts', 'overrides']);
+    const stored = await session.get(['contexts', 'overrides']);
     let contexts = (stored.contexts || []).filter(c => Date.now() - c.time < 30 * 60000);
     const tabId = sender.tab.id, frameId = sender.frameId || 0;
     if (message.type === 'PAGE') contexts = contexts.filter(c => !(c.tabId === tabId && c.frameId === frameId && c.kind === 'page'));
@@ -83,19 +83,19 @@ async function remember(message, sender) {
       const meta = override && C.urlKey(override.pageUrl) === C.urlKey(message.pageUrl) ? {...message.meta, ...override.meta} : message.meta;
       contexts.push({tabId, frameId, incognito: !!sender.tab.incognito, kind: message.type === 'CLICK' ? 'click' : 'page', pageUrl: message.pageUrl, targetUrl: message.targetUrl || '', downloadHint: !!message.downloadHint, meta, time: Date.now()});
     }
-    await chrome.storage.session.set({contexts: contexts.slice(-180)});
+    await session.set({contexts: contexts.slice(-180)});
   });
 }
 async function history(entry) {
   await queue(async () => {
-    const old = (await chrome.storage.local.get('history')).history || [];
-    await chrome.storage.local.set({history: [entry, ...old.filter(x => x.id !== entry.id)].slice(0, 12)});
+    const old = (await api.storage.local.get('history')).history || [];
+    await api.storage.local.set({history: [entry, ...old.filter(x => x.id !== entry.id)].slice(0, 12)});
   });
 }
 async function resolveDownload(item) {
   const config = await settings();
   if (!config.enabled) return;
-  const {contexts = []} = await chrome.storage.session.get('contexts');
+  const {contexts = []} = await session.get('contexts');
   const context = C.selectContext(item, contexts);
   let meta = context?.meta || {};
   // A DOI in the download URL is stronger evidence than referrer metadata.
@@ -113,7 +113,7 @@ async function resolveDownload(item) {
   return {filename, conflictAction: 'uniquify'};
 }
 // Register synchronously so an MV3 service worker can wake for download events.
-chrome.downloads.onDeterminingFilename.addListener((item, suggest) => {
+if (PaperPlatform.nativeDownloads) api.downloads.onDeterminingFilename.addListener((item, suggest) => {
   if (!C.isPdf(item) || /(?:supplement|suppl|suppinfo|appendix|esm\d+|mmc\d+)/i.test(item.url || '')) {suggest(); return;}
   let finished = false;
   const finish = result => {if (!finished) {finished = true; clearTimeout(timeout); suggest(result);}};
@@ -121,63 +121,77 @@ chrome.downloads.onDeterminingFilename.addListener((item, suggest) => {
   resolveDownload(item).then(finish, () => finish());
   return true;
 });
-chrome.downloads.onChanged.addListener(delta => {
+if (api.downloads?.onChanged) api.downloads.onChanged.addListener(delta => {
   if (!delta.filename && !delta.state) return;
   queue(async () => {
-    const {history: entries = []} = await chrome.storage.local.get('history');
+    const {history: entries = []} = await api.storage.local.get('history');
     const entry = entries.find(x => x.id === delta.id);
     if (!entry) return;
     if (delta.filename) entry.actualFilename = delta.filename.current.split(/[\\/]/).pop();
     if (delta.state) entry.state = delta.state.current;
-    await chrome.storage.local.set({history: entries});
+    await api.storage.local.set({history: entries});
   }).catch(() => {});
 });
-chrome.tabs.onRemoved.addListener(tabId => {
+api.tabs.onRemoved.addListener(tabId => {
   queue(async () => {
-    const {contexts = [], overrides = {}} = await chrome.storage.session.get(['contexts', 'overrides']);
+    const {contexts = [], overrides = {}} = await session.get(['contexts', 'overrides']);
     delete overrides[tabId];
-    await chrome.storage.session.set({contexts: contexts.filter(c => c.tabId !== tabId), overrides});
+    await session.set({contexts: contexts.filter(c => c.tabId !== tabId), overrides});
   }).catch(() => {});
 });
-chrome.runtime.onMessage.addListener((message, sender, reply) => {
+PaperPlatform.listen((message, sender, reply) => {
+  if (message.type === 'PREPARE_PDF') {
+    (async () => {
+      if (PaperPlatform.nativeDownloads || !sender.tab || C.urlKey(sender.url) !== C.urlKey(message.pageUrl) ||
+          !PaperDownload.eligible(message.targetUrl, message.pageUrl)) throw new Error('此下载不适用于 Safari 命名');
+      const config = await settings();
+      if (!config.enabled) return {disabled: true};
+      const {overrides = {}} = await session.get('overrides');
+      const override = overrides[sender.tab.id];
+      const meta = override && C.urlKey(override.pageUrl) === C.urlKey(message.pageUrl) ? {...message.meta, ...override.meta} : message.meta;
+      const enriched = await enrich(meta || {}, config);
+      return {filename: C.filename(enriched, config)};
+    })().then(reply, error => reply({error: error.message}));
+    return true;
+  }
   if (['PAGE', 'CLICK'].includes(message.type)) {remember(message, sender).then(() => reply({ok: true}), () => reply({ok: false})); return true;}
   // Page scripts cannot change settings or read local download history.
-  if (!sender.url?.startsWith(chrome.runtime.getURL(''))) return;
+  if (!sender.url?.startsWith(api.runtime.getURL(''))) return;
   (async () => {
     if (message.type === 'STATE') {
       const config = await settings();
-      const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
-      const {contexts = [], overrides = {}} = await chrome.storage.session.get(['contexts', 'overrides']);
+      const [tab] = await api.tabs.query({active: true, currentWindow: true});
+      const {contexts = [], overrides = {}} = await session.get(['contexts', 'overrides']);
       let meta;
-      try {meta = await chrome.tabs.sendMessage(tab.id, {type: 'EXTRACT'}, {frameId: 0});} catch (_) {}
+      try {meta = await api.tabs.sendMessage(tab.id, {type: 'EXTRACT'}, {frameId: 0});} catch (_) {}
       meta ||= contexts.filter(c => c.tabId === tab?.id && c.frameId === 0 && C.urlKey(c.pageUrl) === C.urlKey(tab.url)).sort((a, b) => b.time - a.time)[0]?.meta;
       if (overrides[tab?.id] && C.urlKey(overrides[tab.id].pageUrl) === C.urlKey(tab.url)) meta = {...meta, ...overrides[tab.id].meta};
       meta = meta ? await enrich(meta, config) : null;
-      const {history: entries = []} = await chrome.storage.local.get('history');
-      return {config, meta, tabId: tab?.id, pageUrl: tab?.url, history: entries};
+      const {history: entries = []} = await api.storage.local.get('history');
+      return {config, meta, tabId: tab?.id, pageUrl: tab?.url, history: entries, nativeDownloads: PaperPlatform.nativeDownloads};
     }
     if (message.type === 'SETTINGS') {
       const old = await settings();
       const next = {...old, ...message.config};
       if (!['journal-year-title', 'year-journal-title', 'title-year-journal'].includes(next.order)) next.order = C.defaults.order;
-      await chrome.storage.local.set({settings: next});
+      await api.storage.local.set({settings: next});
       return {ok: true};
     }
     if (message.type === 'OVERRIDE') {
-      const tab = await chrome.tabs.get(message.tabId);
+      const tab = await api.tabs.get(message.tabId);
       if (C.urlKey(tab.url) !== C.urlKey(message.pageUrl)) throw new Error('页面已切换，请刷新插件');
       const meta = {title: C.clean(message.meta.title), journal: C.clean(message.meta.journal), abbreviation: C.clean(message.meta.abbreviation), year: C.year(message.meta.year), doi: C.doi(message.meta.doi), pdfUrls: message.meta.pdfUrls || []};
       if (!meta.title) throw new Error('请填写文章标题');
       await queue(async () => {
-        const {contexts = [], overrides = {}} = await chrome.storage.session.get(['contexts', 'overrides']);
+        const {contexts = [], overrides = {}} = await session.get(['contexts', 'overrides']);
         overrides[tab.id] = {pageUrl: tab.url, meta};
         for (const c of contexts) if (c.tabId === tab.id && C.urlKey(c.pageUrl) === C.urlKey(tab.url)) c.meta = {...c.meta, ...meta};
         if (!contexts.some(c => c.tabId === tab.id && c.kind === 'page' && C.urlKey(c.pageUrl) === C.urlKey(tab.url))) contexts.push({tabId: tab.id, frameId: 0, incognito: !!tab.incognito, kind: 'page', pageUrl: tab.url, meta, time: Date.now()});
-        await chrome.storage.session.set({contexts, overrides});
+        await session.set({contexts, overrides});
       });
       return {ok: true};
     }
-    if (message.type === 'CLEAR') {await chrome.storage.local.remove(['history', 'metadataCache']); return {ok: true};}
+    if (message.type === 'CLEAR') {await api.storage.local.remove(['history', 'metadataCache']); return {ok: true};}
     throw new Error('Unknown message');
   })().then(reply, error => reply({error: error.message}));
   return true;

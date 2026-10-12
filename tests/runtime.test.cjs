@@ -14,7 +14,7 @@ function environment(remote = async () => ({ok: true, json: async () => apiFixtu
     tabs: {onRemoved: event('removed'), query: async () => [{id: 1, url: 'https://journal.test/article'}], sendMessage: async () => ({title: 'Page article', year: '2024', journal: 'Nature Medicine'}), get: async () => ({id: 1, url: 'https://journal.test/article'})}
   };
   const context = vm.createContext({chrome, PaperCore: C, importScripts: () => {}, setTimeout, clearTimeout, AbortController, fetch: async (url, options) => {requests.push({url, options}); return url.startsWith('chrome-extension:') ? {json: async () => structuredClone(db)} : remote(url, options);}});
-  vm.runInContext(fs.readFileSync(path.join(__dirname, '../extension/background.js'), 'utf8'), context);
+  for (const file of ['lib/platform.js', 'lib/download.js', 'background.js']) vm.runInContext(fs.readFileSync(path.join(__dirname, '../extension', file), 'utf8'), context);
   return {context, stores, listeners, requests, message: (msg, sender) => new Promise(resolve => {const asynchronous = listeners.message(msg, sender, resolve); if (!asynchronous) resolve(undefined);})};
 }
 test('精确 DOI 补全，并优先使用 NLM 缩写', async () => {

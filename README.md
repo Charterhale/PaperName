@@ -1,19 +1,21 @@
 # PaperName · 文献 PDF 自动命名
 
-在 Microsoft Edge 中下载论文 PDF 时，自动用 **期刊缩写、年份、文章标题**命名。支持中文和英文标题、三种顺序、离线期刊缩写表及本页手动纠正。
+在 Google Chrome / Microsoft Edge 中下载论文 PDF 时，自动用 **期刊缩写、年份、文章标题**命名。支持中文和英文标题、三种顺序、离线期刊缩写表及本页手动纠正。
 
-**Automatically name scholarly PDF downloads by journal abbreviation, publication year and article title.** Built for Microsoft Edge with Manifest V3; Chrome compatibility has not been independently verified.
+**Automatically name scholarly PDF downloads by journal abbreviation, publication year and article title.** Chrome and Edge use the native download API. Safari has a separate, limited same-origin PDF save path; see SAFARI.md.
 
 ## 下载与安装
 
-从 [最新版本](https://github.com/Charterhale/PaperName/releases/latest) 下载 `PaperName-Edge-v1.0.0.zip`，解压后：
+从 [最新版本](https://github.com/Charterhale/PaperName/releases/latest) 下载 `PaperName-Chrome-v1.1.0.zip` 或 `PaperName-Edge-v1.1.0.zip`，解压后：
 
-1. 在 Edge 地址栏输入 `edge://extensions`。
+1. 在 Chrome 地址栏输入 `chrome://extensions`，或在 Edge 输入 `edge://extensions`。
 2. 打开“开发人员模式”，选择“加载解压缩的扩展”。
 3. 选择解压目录中的 **extension** 文件夹（其中直接包含 `manifest.json`）。
 4. 固定到工具栏，刷新已经打开的论文页面，再开始下载。
 
-也可直接下载或克隆本仓库，加载仓库根目录下的 `extension/`。使用插件不需要安装 Node.js、Python 或额外账户。尚未发布到浏览器扩展商店。
+也可直接下载或克隆本仓库，加载仓库根目录下的 `extension/`。Chrome/Edge 使用插件不需要安装 Node.js、Python 或额外账户。尚未发布到浏览器扩展商店。
+
+Safari 请下载 `PaperName-Safari-development-v1.1.0.zip`，具体临时加载、Xcode 打包和功能限制见 [SAFARI.md](SAFARI.md)。Safari 无法监听任意浏览器下载；只为同站点直接 PDF 链接提供自动或按钮保存，跨域/中转/POST 请复制名称后手动保存。该 ZIP 是开发资源，不是已签名的 macOS App。
 
 ## 三种顺序
 
@@ -51,7 +53,7 @@
 
 ## 验证
 
-初始版本通过 19 组核心/后台测试和 19 组 Edge 集成验证。Edge 原生下载验证使用本地测试页面及生成的 PDF；数据库选择器使用模拟页面，并非所有网站实际账户流程的验证。
+v1.1.0 通过 22 组核心/后台/Safari 边界测试、19 组 Chrome for Testing 集成验证和 19 组 Edge 回归验证。Edge 原生下载验证使用本地测试页面及生成的 PDF；数据库选择器使用模拟页面，并非所有网站实际账户流程的验证。
 
 见 [验证说明](验证说明.md) 和 [验证结果](验证结果.json)。
 
@@ -63,7 +65,7 @@
 npm test
 ```
 
-### 运行 Edge 集成测试
+### 运行 Chrome / Edge 集成测试
 
 已安装 Microsoft Edge 的电脑上：
 
@@ -72,6 +74,8 @@ npm install
 npm run test:browser
 ```
 
+默认使用 Edge；Chrome 自动化请使用 Google 官方 Chrome for Testing 可执行文件，通过 `PAPERNAME_BROWSER_PATH` 指定，并用 `PAPERNAME_BROWSER_NAME` 区分报告。Chrome 137+ 正式版不再支持命令行加载扩展，但仍可在扩展管理页手动加载。见 [Google 说明](https://groups.google.com/a/chromium.org/g/chromium-extensions/c/1-g8EFx2BBY/m/S0ET5wPjCAAJ)。
+
 默认使用 Playwright 的 `msedge` 通道。可通过 `PAPERNAME_BROWSER_PATH` 指定浏览器可执行文件，或通过 `PAPERNAME_BROWSER_CHANNEL` 指定通道。测试使用独立临时浏览器配置和下载目录，运行产物保存到忽略的 `.artifacts/`，不会使用日常浏览器配置。
 
 ### 构建安装包
@@ -79,6 +83,8 @@ npm run test:browser
 ```sh
 python3 scripts/package.py
 ```
+
+输出位于 `dist/`，分为 Chrome、Edge 和 Safari 开发包。可通过 `--browser chrome / edge / safari` 只构建指定版本。Safari 需要独立 manifest，不能直接加载 Chrome 包。
 
 更新 NLM 数据时，从 [官方原始文件](https://ftp.ncbi.nih.gov/pubmed/J_Entrez.txt) 下载 `J_Entrez.txt` 到 `extension/data/`，再运行 `python3 scripts/build_data.py`。生成索引会记录构建日期，原始文本不纳入仓库或安装包。
 

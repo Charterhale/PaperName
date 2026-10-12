@@ -1,10 +1,10 @@
-// Edge isolated profile integration: real downloads and MV3 service worker, no user profile access.
+// Chromium isolated profile integration: real downloads and MV3 service worker, no user profile access.
 const {chromium} = require('playwright');
 const fs = require('node:fs'), path = require('node:path'), os = require('node:os'), http = require('node:http'), assert = require('node:assert/strict');
 const root = path.resolve(__dirname, '..'), ext = path.join(root, 'extension');
 const artifacts = path.resolve(root, process.env.PAPERNAME_TEST_ARTIFACTS_DIR || '.artifacts');
 fs.mkdirSync(artifacts, {recursive: true});
-const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'papername-edge-'));
+const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'papername-browser-'));
 fs.mkdirSync(path.join(profile, 'Default'), {recursive: true});
 fs.mkdirSync(path.join(profile, 'downloads'), {recursive: true});
 fs.writeFileSync(path.join(profile, 'Default', 'Preferences'), JSON.stringify({download: {default_directory: path.join(profile, 'downloads'), prompt_for_download: false}}));
@@ -136,5 +136,5 @@ async function check(name, fn) {await fn(); results.push(name); console.log('PAS
   await popup.locator('#journal').fill('Nature Medicine'); await popup.locator('#abbreviation').fill('Nat Med');
   await popup.locator('details').first().locator('summary').click();
   await popup.screenshot({path: path.join(artifacts, '界面预览.png'), fullPage: true});
-  fs.writeFileSync(path.join(artifacts, '验证结果.json'), JSON.stringify({browser: 'Microsoft Edge', browserVersion: context.browser()?.version(), date: '2026-10-10', passed: results, liveSiteValidation: false}, null, 2));
+  fs.writeFileSync(path.join(artifacts, '验证结果.json'), JSON.stringify({browser: process.env.PAPERNAME_BROWSER_NAME || 'Microsoft Edge', browserVersion: context.browser()?.version(), date: new Date().toISOString().slice(0,10), passed: results, liveSiteValidation: false}, null, 2));
 })().catch(e => {console.error(e); process.exitCode = 1;}).finally(async () => {if (context) await context.close(); server.close(); fs.rmSync(profile, {recursive: true, force: true});});

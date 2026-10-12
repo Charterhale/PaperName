@@ -1,7 +1,8 @@
 'use strict';
+const api = PaperPlatform.api;
 const $ = id => document.getElementById(id), C = PaperCore;
 let state = {config: {...C.defaults}, meta: null};
-async function send(message) {const result = await chrome.runtime.sendMessage(message); if (result?.error) throw new Error(result.error); return result;}
+async function send(message) {const result = await api.runtime.sendMessage(message); if (result?.error) throw new Error(result.error); return result;}
 function notice(text) {$('notice').textContent = text;}
 function currentMeta() {return {...state.meta, title: $('title').value, year: $('year').value, journal: $('journal').value, abbreviation: $('abbreviation').value};}
 function preview() {
@@ -32,7 +33,17 @@ async function load() {
     $('aliases').value = Object.entries(state.config.aliases || {}).map(([key, value]) => `${state.config.aliasNames?.[key] || key} = ${value}`).join('\n');
     $('status').textContent = state.meta ? '已识别当前论文，可以在下载前纠正。' : '未识别论文详情。谷歌学术会在点击单条 PDF 链接时识别。';
     $('apply').disabled = !/^https?:/.test(state.pageUrl || '');
-    preview(); renderHistory(state.history);
+    const safari = !state.nativeDownloads;
+    $('browser-note').hidden = !safari; $('safari-save').hidden = !safari;
+    $('browser-note').textContent = 'Safari：自动处理同站点的直接 PDF 链接。跨域、中转、POST 或 PDF 阅读器下载请复制文件名后手动保存。';
+    $('pdf-link').replaceChildren();
+    for (const url of state.meta?.pdfUrls || []) {
+      if (!PaperDownload.eligible(url, state.pageUrl)) continue;
+      const option = document.createElement('option'); option.value = url; option.textContent = url; $('pdf-link').append(option);
+    }
+    $('save-pdf').disabled = !$('pdf-link').options.length || !state.meta?.title || !state.config.enabled;
+    if (safari) $('history').textContent = 'Safari 无法读取浏览器下载完成状态。';
+    preview(); if (!safari) renderHistory(state.history);
   } catch (error) {notice('读取失败：' + error.message);}
   finally {$('refresh').disabled = false;}
 }
@@ -62,3 +73,14 @@ $('save-aliases').addEventListener('click', async () => {
 $('copy').addEventListener('click', async () => {try {await navigator.clipboard.writeText($('preview').textContent); notice('文件名已复制。');} catch (_) {notice('复制失败，可以直接选中预览文字复制。');}});
 $('clear').addEventListener('click', async () => {try {await send({type: 'CLEAR'}); renderHistory([]); notice('已清空本地记录与在线缓存。');} catch (error) {notice(error.message);}});
 load();
+
+$('save-pdf').addEventListener('click', async () => {
+  $('save-pdf').disabled = true;
+  try {
+    await send({type: 'OVERRIDE', tabId: state.tabId, pageUrl: state.pageUrl, meta: currentMeta()});
+    const result = await api.tabs.sendMessage(state.tabId, {type: 'SAVE_PDF', url: $('pdf-link').value}, {frameId: 0});
+    if (result?.error) throw new Error(result.error);
+    notice('已交给 Safari 保存；请查看浏览器下载列表。');
+  } catch (error) {notice(error.message);}
+  finally {$('save-pdf').disabled = false;}
+});

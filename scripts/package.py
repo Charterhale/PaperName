@@ -1,17 +1,32 @@
-"""生成可解压加载的 Edge 安装包；排除原始表、测试下载及临时文件。"""
+"""Build Chrome/Edge packages and Safari development resources from shared source."""
 from pathlib import Path
 from zipfile import ZipFile, ZIP_DEFLATED
+import argparse
 import json
+import shutil
 root = Path(__file__).resolve().parents[1]
+parser = argparse.ArgumentParser()
+parser.add_argument('--browser', choices=['all', 'chrome', 'edge', 'safari'], default='all')
+args = parser.parse_args()
 manifest = json.loads((root / 'extension/manifest.json').read_text())
-target = root / f'PaperName-Edge-v{manifest["version"]}.zip'
-with ZipFile(target, 'w', compression=ZIP_DEFLATED, compresslevel=9) as archive:
-    for path in sorted((root / 'extension').rglob('*')):
-        if path.is_file() and path.name not in ['J_Entrez.txt', '.DS_Store']:
-            archive.write(path, 'PaperName/' + str(path.relative_to(root)))
-    for name in ['使用说明.md', '验证说明.md', '验证结果.json', 'LICENSE', '界面预览.png']:
-        path = root / name
-        if path.exists():
-            archive.write(path, 'PaperName/' + name)
-print(target)
-print(f'{target.stat().st_size / 1024 / 1024:.2f} MB')
+for browser in (['chrome', 'edge', 'safari'] if args.browser == 'all' else [args.browser]):
+    folder = root / 'dist' / browser / 'extension'
+    if folder.exists():
+        shutil.rmtree(folder)
+    shutil.copytree(root / 'extension', folder, ignore=shutil.ignore_patterns('J_Entrez.txt', '.DS_Store'))
+    if browser == 'safari':
+        config = dict(manifest)
+        config.pop('minimum_chrome_version', None)
+        config['permissions'] = ['storage', 'tabs']
+        config['background'] = {'page': 'background.html', 'persistent': False}
+        (folder / 'background.html').write_text('<!doctype html><meta charset="UTF-8"><script src="lib/core.js"></script><script src="lib/platform.js"></script><script src="lib/download.js"></script><script src="background.js"></script>\n')
+        (folder / 'manifest.json').write_text(json.dumps(config, ensure_ascii=False, indent=2) + '\n')
+    label = 'Safari-development' if browser == 'safari' else browser.capitalize()
+    target = root / 'dist' / f'PaperName-{label}-v{manifest["version"]}.zip'
+    with ZipFile(target, 'w', compression=ZIP_DEFLATED, compresslevel=9) as archive:
+        for path in sorted(folder.rglob('*')):
+            if path.is_file():
+                archive.write(path, 'PaperName/extension/' + str(path.relative_to(folder)))
+        for name in ['README.md', 'SAFARI.md', 'DATA_SOURCES.md', '使用说明.md', '验证说明.md', 'LICENSE']:
+            archive.write(root / name, 'PaperName/' + name)
+    print(target)

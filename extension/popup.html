@@ -3,6 +3,7 @@
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>PaperName · 文献命名</title><link rel="stylesheet" href="popup.css"></head>
 <body><main>
   <header><div class="brand"><img src="icons/48.png" alt=""><div><strong>PaperName</strong><span>让文献下载，自带好名字</span></div></div><label class="switch"><input id="enabled" type="checkbox"><span>自动命名</span></label></header>
+  <p id="browser-note" class="muted small" hidden></p>
   <section><h2>你喜欢的命名顺序</h2><div class="orders">
     <label><input type="radio" name="order" value="journal-year-title"><span>期刊缩写<span class="dash">–</span>年份<span class="dash">–</span>文章标题</span></label>
     <label><input type="radio" name="order" value="year-journal-title"><span>年份<span class="dash">–</span>期刊缩写<span class="dash">–</span>文章标题</span></label>
@@ -12,10 +13,11 @@
     <label class="field">文章标题<textarea id="title" rows="2" placeholder="打开论文详情页，或手动输入"></textarea></label>
     <div class="columns"><label class="field">年份<input id="year" inputmode="numeric" placeholder="2026" maxlength="4"></label><label class="field">期刊缩写<input id="abbreviation" placeholder="如 Nat Med"></label></div>
     <label class="field">期刊全名<input id="journal" placeholder="用于查找或自定义缩写"></label>
+    <div id="safari-save" hidden><label class="field">本页 PDF 链接<select id="pdf-link"></select></label><button id="save-pdf" class="secondary">用预览名称下载 PDF</button></div>
     <button id="apply" class="primary">将纠正的信息用于本页下载</button><p class="muted small">纠正仅关联当前论文页面。信息缺失时省略相应字段；没有可靠缩写时使用期刊全名。</p>
   </section>
   <details><summary>识别设置与期刊缩写</summary><div class="details-body"><label class="check"><input id="online" type="checkbox"><span>允许通过 DOI / PMID 补全文献信息</span></label><p class="muted small">只向 Crossref / NCBI 发送论文标识符，不上传 PDF、页面正文或下载链接。关闭后仍可读取页面信息和离线期刊表。</p><label class="field">自定义缩写（每行一条）<textarea id="aliases" rows="4" placeholder="Nature Medicine = Nat Med&#10;中华骨科杂志 = 中华骨科"></textarea></label><button id="save-aliases" class="secondary">保存自定义缩写</button><p class="muted small">可在等号左侧填写期刊全名或 ISSN。中文刊名默认保留原名。</p></div></details>
   <details><summary>最近的 PDF 下载</summary><div class="details-body"><div id="history" class="history"></div><button id="clear" class="text-button">清空记录与在线缓存</button></div></details>
   <footer>下载前打开论文详情页，识别更完整。<br>已下载文件不会追溯改名；CAJ 文件不处理。</footer>
   <p id="notice" class="notice" role="status" aria-live="polite"></p>
-</main><script src="lib/core.js"></script><script src="popup.js"></script></body></html>
+</main><script src="lib/core.js"></script><script src="lib/platform.js"></script><script src="lib/download.js"></script><script src="popup.js"></script></body></html>

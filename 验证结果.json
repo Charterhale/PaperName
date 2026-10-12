@@ -1,32 +1,76 @@
 {
-  "browser": "Microsoft Edge",
-  "browserVersion": "131.0.2903.112",
-  "date": "2026-10-10",
-  "passed": [
-    "MV3 加载与真实 PDF 下载自动命名",
-    "第二篇论文与第一篇独立关联",
-    "年份在前",
-    "标题在前",
-    "重定向 PDF",
-    "POST 表单和不含 pdf 的下载地址",
-    "未知页面不误用上一篇论文",
-    "SPA 页面元数据变更",
-    "设置界面切换与持久化",
-    "关闭自动命名",
-    "自定义期刊缩写",
-    "本页手动纠正与其它页面隔离",
-    "PubMed DOM 文献信息",
-    "谷歌学术单条 PDF、截断期刊不猜测",
-    "知网标签字段",
-    "万方标准文献标签",
-    "Web of Science 详情页选择器",
-    "JSON-LD 与引用列表隔离",
-    "普通网页标题不被识别为论文"
-  ],
-  "liveSiteValidation": false,
-  "unitTests": {
-    "passed": 19,
-    "failed": 0
-  },
-  "totalGroupsPassed": 38
+  "version": "1.1.0",
+  "date": "2026-10-12",
+  "unitTests": 22,
+  "reports": [
+    {
+      "browser": "Chrome for Testing",
+      "browserVersion": "155.0.8059.39",
+      "date": "2026-10-12",
+      "passed": [
+        "MV3 加载与真实 PDF 下载自动命名",
+        "第二篇论文与第一篇独立关联",
+        "年份在前",
+        "标题在前",
+        "重定向 PDF",
+        "POST 表单和不含 pdf 的下载地址",
+        "未知页面不误用上一篇论文",
+        "SPA 页面元数据变更",
+        "设置界面切换与持久化",
+        "关闭自动命名",
+        "自定义期刊缩写",
+        "本页手动纠正与其它页面隔离",
+        "PubMed DOM 文献信息",
+        "谷歌学术单条 PDF、截断期刊不猜测",
+        "知网标签字段",
+        "万方标准文献标签",
+        "Web of Science 详情页选择器",
+        "JSON-LD 与引用列表隔离",
+        "普通网页标题不被识别为论文"
+      ],
+      "liveSiteValidation": false
+    },
+    {
+      "browser": "Microsoft Edge",
+      "browserVersion": "131.0.2903.112",
+      "date": "2026-10-12",
+      "passed": [
+        "MV3 加载与真实 PDF 下载自动命名",
+        "第二篇论文与第一篇独立关联",
+        "年份在前",
+        "标题在前",
+        "重定向 PDF",
+        "POST 表单和不含 pdf 的下载地址",
+        "未知页面不误用上一篇论文",
+        "SPA 页面元数据变更",
+        "设置界面切换与持久化",
+        "关闭自动命名",
+        "自定义期刊缩写",
+        "本页手动纠正与其它页面隔离",
+        "PubMed DOM 文献信息",
+        "谷歌学术单条 PDF、截断期刊不猜测",
+        "知网标签字段",
+        "万方标准文献标签",
+        "Web of Science 详情页选择器",
+        "JSON-LD 与引用列表隔离",
+        "普通网页标题不被识别为论文"
+      ],
+      "liveSiteValidation": false
+    },
+    {
+      "browser": "Safari",
+      "browserVersion": "27.0.1",
+      "date": "2026-10-12",
+      "passed": [
+        "Temporary extension and current-page metadata",
+        "Three filename orders with real PDF byte checks",
+        "Popup PDF save button",
+        "Persistent ordering settings",
+        "Reject HTML response and offer original link",
+        "UTF-8 background page and popup width"
+      ],
+      "liveSiteValidation": false,
+      "signedDistribution": false
+    }
+  ]
 }
