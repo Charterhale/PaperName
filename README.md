@@ -1,12 +1,14 @@
 # PaperName · 文献 PDF 自动命名
 
+**v1.1.1 修复弹窗被挤成细条、下方设置不可见的问题。** Chrome、Edge 和 Safari 共用固定宽度与纵向滚动布局。旧版解压加载目录不会随 GitHub 发布自动更新，替换文件后请在扩展管理页重新加载。见 [更新记录](CHANGELOG.md)。
+
 在 Google Chrome / Microsoft Edge 中下载论文 PDF 时，自动用 **期刊缩写、年份、文章标题**命名。支持中文和英文标题、三种顺序、离线期刊缩写表及本页手动纠正。
 
 **Automatically name scholarly PDF downloads by journal abbreviation, publication year and article title.** Chrome and Edge use the native download API. Safari has a separate, limited same-origin PDF save path; see SAFARI.md.
 
 ## 下载与安装
 
-从 [最新版本](https://github.com/Charterhale/PaperName/releases/latest) 下载 `PaperName-Chrome-v1.1.0.zip` 或 `PaperName-Edge-v1.1.0.zip`，解压后：
+从 [最新版本](https://github.com/Charterhale/PaperName/releases/latest) 下载 `PaperName-Chrome-v1.1.1.zip` 或 `PaperName-Edge-v1.1.1.zip`，解压后：
 
 1. 在 Chrome 地址栏输入 `chrome://extensions`，或在 Edge 输入 `edge://extensions`。
 2. 打开“开发人员模式”，选择“加载解压缩的扩展”。
@@ -15,7 +17,7 @@
 
 也可直接下载或克隆本仓库，加载仓库根目录下的 `extension/`。Chrome/Edge 使用插件不需要安装 Node.js、Python 或额外账户。尚未发布到浏览器扩展商店。
 
-Safari 请下载 `PaperName-Safari-development-v1.1.0.zip`，具体临时加载、Xcode 打包和功能限制见 [SAFARI.md](SAFARI.md)。Safari 无法监听任意浏览器下载；只为同站点直接 PDF 链接提供自动或按钮保存，跨域/中转/POST 请复制名称后手动保存。该 ZIP 是开发资源，不是已签名的 macOS App。
+Safari 请下载 `PaperName-Safari-development-v1.1.1.zip`，具体临时加载、Xcode 打包和功能限制见 [SAFARI.md](SAFARI.md)。Safari 无法监听任意浏览器下载；只为同站点直接 PDF 链接提供自动或按钮保存，跨域/中转/POST 请复制名称后手动保存。该 ZIP 是开发资源，不是已签名的 macOS App。
 
 ## 三种顺序
 
@@ -53,7 +55,7 @@ Safari 请下载 `PaperName-Safari-development-v1.1.0.zip`，具体临时加载�
 
 ## 验证
 
-v1.1.0 通过 22 组核心/后台/Safari 边界测试、19 组 Chrome for Testing 集成验证和 19 组 Edge 回归验证。Edge 原生下载验证使用本地测试页面及生成的 PDF；数据库选择器使用模拟页面，并非所有网站实际账户流程的验证。
+v1.1.1 通过 22 组核心/后台/Safari 边界测试、19 组 Chrome for Testing 集成验证和 19 组 Edge 回归验证。Edge 原生下载验证使用本地测试页面及生成的 PDF；数据库选择器使用模拟页面，并非所有网站实际账户流程的验证。
 
 见 [验证说明](验证说明.md) 和 [验证结果](验证结果.json)。
 

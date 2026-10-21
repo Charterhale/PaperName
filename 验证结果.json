@@ -1,12 +1,12 @@
 {
-  "version": "1.1.0",
-  "date": "2026-10-12",
+  "version": "1.1.1",
+  "date": "2026-10-21",
   "unitTests": 22,
   "reports": [
     {
       "browser": "Chrome for Testing",
-      "browserVersion": "155.0.8059.39",
-      "date": "2026-10-12",
+      "browserVersion": "156.0.8078.4",
+      "date": "2026-10-21",
       "passed": [
         "MV3 加载与真实 PDF 下载自动命名",
         "第二篇论文与第一篇独立关联",
@@ -33,7 +33,7 @@
     {
       "browser": "Microsoft Edge",
       "browserVersion": "131.0.2903.112",
-      "date": "2026-10-12",
+      "date": "2026-10-21",
       "passed": [
         "MV3 加载与真实 PDF 下载自动命名",
         "第二篇论文与第一篇独立关联",
@@ -70,7 +70,43 @@
         "UTF-8 background page and popup width"
       ],
       "liveSiteValidation": false,
-      "signedDistribution": false
+      "signedDistribution": false,
+      "testedExtensionVersion": "1.1.0"
     }
-  ]
+  ],
+  "popupLayout": {
+    "date": "2026-10-21",
+    "reports": [
+      {
+        "browser": "Chrome for Testing",
+        "version": "156.0.8078.4",
+        "checks": [
+          "fixed width from 25px initial viewport",
+          "fixed width from 430px initial viewport",
+          "fixed width from 800px initial viewport",
+          "expanded aliases reachable by scrolling",
+          "download history and clear button reachable"
+        ],
+        "actualExtensionPopup": false
+      },
+      {
+        "browser": "WebKit Safari layout",
+        "version": "27.2",
+        "checks": [
+          "fixed width from 25px initial viewport",
+          "fixed width from 430px initial viewport",
+          "fixed width from 800px initial viewport",
+          "expanded aliases reachable by scrolling",
+          "download history and clear button reachable"
+        ],
+        "actualExtensionPopup": false
+      }
+    ]
+  },
+  "installedEdgePopup": {
+    "date": "2026-10-21",
+    "actualPopup": true,
+    "threeOrdersVisible": true,
+    "bottomSettingsReachableByScroll": true
+  }
 }

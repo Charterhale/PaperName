@@ -27,6 +27,6 @@ for browser in (['chrome', 'edge', 'safari'] if args.browser == 'all' else [args
         for path in sorted(folder.rglob('*')):
             if path.is_file():
                 archive.write(path, 'PaperName/extension/' + str(path.relative_to(folder)))
-        for name in ['README.md', 'SAFARI.md', 'DATA_SOURCES.md', '使用说明.md', '验证说明.md', 'LICENSE']:
+        for name in ['README.md', 'CHANGELOG.md', 'SAFARI.md', 'DATA_SOURCES.md', '使用说明.md', '验证说明.md', 'LICENSE']:
             archive.write(root / name, 'PaperName/' + name)
     print(target)
