@@ -17,6 +17,7 @@
       abbreviation: get('citation_journal_abbrev', 'citation_journal_abbreviation', 'prism.publicationabbreviation'),
       year: C.year(get('citation_publication_date', 'citation_date', 'dc.date', 'dcterms.issued', 'prism.publicationdate', 'publication_date')),
       doi: C.doi(get('citation_doi', 'prism.doi', 'dc.identifier', 'dc.identifier.doi')),
+      pii: C.pii(get('citation_pii', 'prism.pii', 'pii', 'dc.identifier')),
       pmid: get('citation_pmid'), issn: get('citation_issn', 'prism.issn'),
       pdfUrls: (values.citation_pdf_url || []).map(v => {try {return new URL(v, pageUrl).href;} catch (_) {return '';}}).filter(Boolean)
     };

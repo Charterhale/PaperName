@@ -4,7 +4,7 @@ PaperName 的 Safari 版本使用同一套文献识别、期刊缩写和文件�
 
 ## 安装方式
 
-下载 Release 的 `PaperName-Safari-development-v1.1.1.zip`，解压后取得 `PaperName/extension` 文件夹。
+下载 Release 的 `PaperName-Safari-development-v1.1.2.zip`，解压后取得 `PaperName/extension` 文件夹。
 
 - macOS Safari 27 或以上：按 Apple 的[临时加载扩展说明](https://developer.apple.com/documentation/safariservices/running-your-safari-web-extension)，在 Safari 设置的高级选项启用网页开发功能，再在开发者设置中添加临时扩展文件夹。只给需要处理的文献网站授权。临时扩展属于开发/测试方式，并非 App Store 安装包。
 - 需要长期安装或使用较早版本 Safari：安装完整 Xcode，在仓库运行 `python3 scripts/package.py --browser safari`，再运行 `python3 scripts/safari_project.py`。使用生成的 Xcode 工程进行构建、签名和安装。脚本不会改系统开发路径、不会签名或安装。Apple 的[打包说明](https://developer.apple.com/documentation/safariservices/packaging-a-web-extension-for-safari)介绍了相关流程。

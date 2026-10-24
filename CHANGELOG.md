@@ -1,5 +1,12 @@
 # 更新记录
 
+## v1.1.2 — 2026-10-24
+
+- 修复 ScienceDirect / Cell Press 直接下载的 PDF 只有 PII、没有 DOI 时未自动命名的问题。
+- 可从下载网址或 `PIIS155041312600375X.pdf` 这类原始文件名提取并标准化 Elsevier PII。
+- 仅当 PubMed 对 PII 返回唯一记录且记录内 PII 完全一致时才采用元数据；结果缺失、冲突或不唯一时保留原名。
+- Chrome、Edge 和 Safari 的共享识别代码同步更新；Safari 原有同源下载限制不变。
+
 ## v1.1.1 — 2026-10-21
 
 - Chrome、Edge 和 Safari 共用稳定的 430px 弹窗宽度，不依赖弹窗打开时的初始视口宽度。

@@ -1,6 +1,6 @@
 # PaperName · 文献 PDF 自动命名
 
-**v1.1.1 修复弹窗被挤成细条、下方设置不可见的问题。** Chrome、Edge 和 Safari 共用固定宽度与纵向滚动布局。旧版解压加载目录不会随 GitHub 发布自动更新，替换文件后请在扩展管理页重新加载。见 [更新记录](CHANGELOG.md)。
+**v1.1.2 修复 ScienceDirect / Cell Press 直接下载只有 PII 时未自动命名的问题。** 插件会对唯一且完全匹配的 PubMed PII 记录补全文献信息；无法可靠确认时仍保留原名。旧版解压加载目录不会随 GitHub 发布自动更新，替换文件后请在扩展管理页重新加载。见 [更新记录](CHANGELOG.md)。
 
 在 Google Chrome / Microsoft Edge 中下载论文 PDF 时，自动用 **期刊缩写、年份、文章标题**命名。支持中文和英文标题、三种顺序、离线期刊缩写表及本页手动纠正。
 
@@ -8,7 +8,7 @@
 
 ## 下载与安装
 
-从 [最新版本](https://github.com/Charterhale/PaperName/releases/latest) 下载 `PaperName-Chrome-v1.1.1.zip` 或 `PaperName-Edge-v1.1.1.zip`，解压后：
+从 [最新版本](https://github.com/Charterhale/PaperName/releases/latest) 下载 `PaperName-Chrome-v1.1.2.zip` 或 `PaperName-Edge-v1.1.2.zip`，解压后：
 
 1. 在 Chrome 地址栏输入 `chrome://extensions`，或在 Edge 输入 `edge://extensions`。
 2. 打开“开发人员模式”，选择“加载解压缩的扩展”。
@@ -17,7 +17,7 @@
 
 也可直接下载或克隆本仓库，加载仓库根目录下的 `extension/`。Chrome/Edge 使用插件不需要安装 Node.js、Python 或额外账户。尚未发布到浏览器扩展商店。
 
-Safari 请下载 `PaperName-Safari-development-v1.1.1.zip`，具体临时加载、Xcode 打包和功能限制见 [SAFARI.md](SAFARI.md)。Safari 无法监听任意浏览器下载；只为同站点直接 PDF 链接提供自动或按钮保存，跨域/中转/POST 请复制名称后手动保存。该 ZIP 是开发资源，不是已签名的 macOS App。
+Safari 请下载 `PaperName-Safari-development-v1.1.2.zip`，具体临时加载、Xcode 打包和功能限制见 [SAFARI.md](SAFARI.md)。Safari 无法监听任意浏览器下载；只为同站点直接 PDF 链接提供自动或按钮保存，跨域/中转/POST 请复制名称后手动保存。该 ZIP 是开发资源，不是已签名的 macOS App。
 
 ## 三种顺序
 
@@ -33,7 +33,7 @@ Safari 请下载 `PaperName-Safari-development-v1.1.1.zip`，具体临时加载�
 
 ## 识别范围
 
-通用期刊页面支持 citation、Dublin Core、PRISM 标签和 JSON-LD。另提供 PubMed、PMC、谷歌学术单条搜索结果、Web of Science 详情页、知网和万方的识别规则。
+通用期刊页面支持 citation、Dublin Core、PRISM 标签和 JSON-LD。另提供 PubMed、PMC、ScienceDirect / Cell Press 的 PII、谷歌学术单条搜索结果、Web of Science 详情页、知网和万方的识别规则。
 
 页面识别规则不等于这些网站的所有页面、机构代理和登录流程都已实测，也不能保证覆盖“绝大部分网站”的具体百分比。信息缺失或下载来源无法可靠关联时：
 
@@ -47,7 +47,7 @@ Safari 请下载 `PaperName-Safari-development-v1.1.1.zip`，具体临时加载�
 
 - 页面元数据与下载来源的关联在本机处理；不会根据活动标签页猜测任意下载属于哪篇论文。
 - 随包提供 NLM 离线期刊表：2026-10-10 构建，42,086 条有可用缩写的记录。同名但指向不同缩写的键不强行选择。
-- 可选在线补全只向 Crossref / NCBI 发送 DOI / PMID，不上传 PDF、页面正文、下载链接或网站登录 Cookie。可在设置中关闭。
+- 可选在线补全只向 Crossref / NCBI 发送 DOI、PMID 或 PII，不上传 PDF、页面正文、下载链接或网站登录 Cookie。可在设置中关闭。
 - 设置、最近 12 条处理记录和最多 200 条在线元数据缓存存储在本机，可清空。
 - 网站访问权限用于在各期刊、数据库和机构代理网站读取文献元数据；下载权限用于建议文件名和检查下载状态。
 
@@ -55,7 +55,7 @@ Safari 请下载 `PaperName-Safari-development-v1.1.1.zip`，具体临时加载�
 
 ## 验证
 
-v1.1.1 通过 22 组核心/后台/Safari 边界测试、19 组 Chrome for Testing 集成验证和 19 组 Edge 回归验证。Edge 原生下载验证使用本地测试页面及生成的 PDF；数据库选择器使用模拟页面，并非所有网站实际账户流程的验证。
+v1.1.2 通过 25 组核心/后台/Safari 边界测试；Chrome 和 Edge 的集成验证结果见 [验证说明](验证说明.md)。ScienceDirect PII 修复同时核对了本次报告论文的 PubMed 唯一记录。
 
 见 [验证说明](验证说明.md) 和 [验证结果](验证结果.json)。
 

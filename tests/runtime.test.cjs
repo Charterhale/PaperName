@@ -26,6 +26,25 @@ test('精确 DOI 补全，并优先使用 NLM 缩写', async () => {
   assert.ok(api.url.includes('10.1037%2F0003-066X.59.1.29'));
   assert.equal(api.options.credentials, 'omit'); assert.equal(api.options.referrerPolicy, 'no-referrer');
 });
+test('ScienceDirect 原始文件名中的 PII 可经 PubMed 唯一记录补全', async () => {
+  const e = environment(async url => {
+    if (url.includes('/esearch.fcgi')) return {ok: true, json: async () => ({esearchresult: {count: '1', idlist: ['42772285']}})};
+    if (url.includes('/esummary.fcgi')) return {ok: true, json: async () => ({result: {'42772285': {uid: '42772285', title: 'A liver-cartilage selenium axis underlies metabolic comorbidity in osteoarthritis.', fulljournalname: 'Cell Metabolism', source: 'Cell Metab', pubdate: '2026 Oct 06', issn: '1550-4131', articleids: [{idtype: 'pii', value: 'S1550-4131(26)00375-X'}, {idtype: 'doi', value: '10.1016/j.cmet.2026.08.023'}]}}})};
+    throw new Error('Unexpected request');
+  });
+  e.stores.session.contexts = [];
+  const result = await vm.runInContext(`resolveDownload({id:8,mime:'application/pdf',filename:'PIIS155041312600375X.pdf',url:'https://pdf.sciencedirectassets.com/file.pdf'})`, e.context);
+  assert.equal(result.filename, 'Cell Metab-2026-A liver-cartilage selenium axis underlies metabolic comorbidity in osteoarthritis.pdf');
+  assert.ok(e.requests.some(request => request.url.includes(encodeURIComponent('S1550-4131(26)00375-X[pii]'))));
+});
+test('PII 检索不唯一或返回记录 PII 不一致时不改名', async () => {
+  const ambiguous = environment(async url => ({ok: true, json: async () => url.includes('/esearch.fcgi') ? {esearchresult: {count: '2', idlist: ['1', '2']}} : {}}));
+  ambiguous.stores.session.contexts = [];
+  assert.equal(await vm.runInContext(`resolveDownload({id:9,mime:'application/pdf',filename:'PIIS155041312600375X.pdf',url:'https://x/file.pdf'})`, ambiguous.context), undefined);
+  const mismatch = environment(async url => ({ok: true, json: async () => url.includes('/esearch.fcgi') ? {esearchresult: {count: '1', idlist: ['1']}} : {result: {'1': {uid: '1', title: 'Wrong', source: 'Wrong', pubdate: '2026', articleids: [{idtype: 'pii', value: 'S0000-0000(26)00000-0'}]}}}}));
+  mismatch.stores.session.contexts = [];
+  assert.equal(await vm.runInContext(`resolveDownload({id:10,mime:'application/pdf',filename:'PIIS155041312600375X.pdf',url:'https://x/file.pdf'})`, mismatch.context), undefined);
+});
 test('网络失败仍使用已识别字段，关闭在线补全不发请求', async () => {
   const e = environment(async () => {throw new Error('Network failure');});
   e.stores.session.contexts = [{time: Date.now(), kind: 'page', pageUrl: 'https://journal.test/article', meta: {title: 'Offline title', doi: '10.1000/paper'}}];

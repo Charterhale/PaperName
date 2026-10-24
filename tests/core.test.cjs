@@ -33,6 +33,12 @@ test('DOI 包含括号、编码和 pdf 路由', () => {
   assert.equal(C.doi('https://x/10.1000%2Ffoo.pdf?token=1'), '10.1000/foo');
   assert.equal(C.doi('https://x/10.1000/foo/epdf'), '10.1000/foo');
 });
+test('Elsevier PII 可从网址和原始文件名提取并标准化', () => {
+  assert.equal(C.pii('https://www.sciencedirect.com/science/article/pii/S155041312600375X/pdfft'), 'S1550-4131(26)00375-X');
+  assert.equal(C.pii('PIIS155041312600375X.pdf'), 'S1550-4131(26)00375-X');
+  assert.equal(C.pii('S1550-4131(26)00375-X'), 'S1550-4131(26)00375-X');
+  assert.equal(C.pii('ordinary-paper.pdf'), '');
+});
 const now = Date.now();
 const ctx = (patch = {}) => ({kind: 'page', pageUrl: 'https://journal.test/article', time: now, meta: {title: 'A'}, ...patch});
 test('下载与准确来源匹配，不根据活动标签猜测', () => {

@@ -16,7 +16,7 @@
     <div id="safari-save" hidden><label class="field">本页 PDF 链接<select id="pdf-link"></select></label><button id="save-pdf" class="secondary">用预览名称下载 PDF</button></div>
     <button id="apply" class="primary">将纠正的信息用于本页下载</button><p class="muted small">纠正仅关联当前论文页面。信息缺失时省略相应字段；没有可靠缩写时使用期刊全名。</p>
   </section>
-  <details><summary>识别设置与期刊缩写</summary><div class="details-body"><label class="check"><input id="online" type="checkbox"><span>允许通过 DOI / PMID 补全文献信息</span></label><p class="muted small">只向 Crossref / NCBI 发送论文标识符，不上传 PDF、页面正文或下载链接。关闭后仍可读取页面信息和离线期刊表。</p><label class="field">自定义缩写（每行一条）<textarea id="aliases" rows="4" placeholder="Nature Medicine = Nat Med&#10;中华骨科杂志 = 中华骨科"></textarea></label><button id="save-aliases" class="secondary">保存自定义缩写</button><p class="muted small">可在等号左侧填写期刊全名或 ISSN。中文刊名默认保留原名。</p></div></details>
+  <details><summary>识别设置与期刊缩写</summary><div class="details-body"><label class="check"><input id="online" type="checkbox"><span>允许通过 DOI / PMID / PII 补全文献信息</span></label><p class="muted small">只向 Crossref / NCBI 发送论文标识符，不上传 PDF、页面正文或下载链接。关闭后仍可读取页面信息和离线期刊表。</p><label class="field">自定义缩写（每行一条）<textarea id="aliases" rows="4" placeholder="Nature Medicine = Nat Med&#10;中华骨科杂志 = 中华骨科"></textarea></label><button id="save-aliases" class="secondary">保存自定义缩写</button><p class="muted small">可在等号左侧填写期刊全名或 ISSN。中文刊名默认保留原名。</p></div></details>
   <details><summary>最近的 PDF 下载</summary><div class="details-body"><div id="history" class="history"></div><button id="clear" class="text-button">清空记录与在线缓存</button></div></details>
   <footer>下载前打开论文详情页，识别更完整。<br>已下载文件不会追溯改名；CAJ 文件不处理。</footer>
   <p id="notice" class="notice" role="status" aria-live="polite"></p>

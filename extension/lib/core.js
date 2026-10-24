@@ -12,6 +12,14 @@
     // Do not use a page's reference list. Call this only on explicit DOI fields or URLs.
     return str.match(/10\.\d{4,9}\/[^\s<>"?#]+/i)?.[0].replace(/(?:\/pdf|\/full|\/epdf|\.pdf)$/i, '').replace(/[.,;]+$/, '') || '';
   }
+  function pii(value) {
+    let str = String(value || '');
+    try {str = decodeURIComponent(str);} catch (_) {}
+    const formatted = str.match(/S\d{4}-\d{3}[\dX]\(\d{2}\)\d{5}-[\dX]/i)?.[0];
+    const compact = (formatted || str.match(/S\d{15}[\dX]/i)?.[0] || '').replace(/[^\dSX]/gi, '').toUpperCase();
+    if (!/^S\d{15}[\dX]$/.test(compact)) return '';
+    return compact.slice(0, 5) + '-' + compact.slice(5, 9) + '(' + compact.slice(9, 11) + ')' + compact.slice(11, 16) + '-' + compact.slice(16);
+  }
   function urlKey(value) {
     try {const u = new URL(value); u.hash = ''; return u.href;} catch (_) {return '';}
   }
@@ -45,7 +53,7 @@
   }
   function merge(base, extra) {
     const out = {...base};
-    for (const key of ['title', 'journal', 'abbreviation', 'year', 'doi', 'pmid', 'issn']) if (!out[key] && extra?.[key]) out[key] = extra[key];
+    for (const key of ['title', 'journal', 'abbreviation', 'year', 'doi', 'pmid', 'pii', 'issn']) if (!out[key] && extra?.[key]) out[key] = extra[key];
     return out;
   }
   function selectContext(item, contexts, now = Date.now()) {
@@ -72,6 +80,6 @@
     if (ref) return unique(fresh.filter(c => c.kind === 'page' && urlKey(c.pageUrl) === ref));
     return null;
   }
-  root.PaperCore = {defaults, clean, journalKey, year, doi, urlKey, sanitize, byteTrim, filename, isPdf, merge, selectContext};
+  root.PaperCore = {defaults, clean, journalKey, year, doi, pii, urlKey, sanitize, byteTrim, filename, isPdf, merge, selectContext};
   if (typeof module !== 'undefined') module.exports = root.PaperCore;
 })(globalThis);

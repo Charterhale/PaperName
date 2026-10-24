@@ -123,6 +123,10 @@ async function check(name, fn) {await fn(); results.push(name); console.log('PAS
     const m = await parse('<div data-ta="FullRTa-title">WOS article</div><div data-ta="FullRTa-sourceTitle">Cell</div><div data-ta="FullRTa-pubdate">2025</div>', 'https://www.webofscience.com/wos/woscc/full-record/WOS:1');
     assert.equal(m.title, 'WOS article'); assert.equal(m.journal, 'Cell'); assert.equal(m.year, '2025');
   });
+  await check('ScienceDirect PII 标签', async () => {
+    const m = await parse('<meta name="citation_title" content="PII article"><meta name="citation_pii" content="S1550-4131(26)00375-X">', 'https://www.sciencedirect.com/science/article/pii/S155041312600375X');
+    assert.equal(m.title, 'PII article'); assert.equal(m.pii, 'S1550-4131(26)00375-X');
+  });
   await check('JSON-LD 与引用列表隔离', async () => {
     const m = await parse('<script type="application/ld+json">{"@type":"ScholarlyArticle","headline":"Structured paper","datePublished":"2024","isPartOf":{"@type":"PublicationIssue","isPartOf":{"@type":"Periodical","name":"Science"}}}</script><div class="references">10.9999/wrong</div>', 'https://journal.test/paper');
     assert.equal(m.title, 'Structured paper'); assert.equal(m.journal, 'Science'); assert.equal(m.doi, '');

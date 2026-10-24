@@ -1,12 +1,12 @@
 {
-  "version": "1.1.1",
-  "date": "2026-10-21",
-  "unitTests": 22,
+  "version": "1.1.2",
+  "date": "2026-10-24",
+  "unitTests": 25,
   "reports": [
     {
       "browser": "Chrome for Testing",
       "browserVersion": "156.0.8078.4",
-      "date": "2026-10-21",
+      "date": "2026-10-24",
       "passed": [
         "MV3 加载与真实 PDF 下载自动命名",
         "第二篇论文与第一篇独立关联",
@@ -25,6 +25,7 @@
         "知网标签字段",
         "万方标准文献标签",
         "Web of Science 详情页选择器",
+        "ScienceDirect PII 标签",
         "JSON-LD 与引用列表隔离",
         "普通网页标题不被识别为论文"
       ],
@@ -33,7 +34,7 @@
     {
       "browser": "Microsoft Edge",
       "browserVersion": "131.0.2903.112",
-      "date": "2026-10-21",
+      "date": "2026-10-24",
       "passed": [
         "MV3 加载与真实 PDF 下载自动命名",
         "第二篇论文与第一篇独立关联",
@@ -52,6 +53,7 @@
         "知网标签字段",
         "万方标准文献标签",
         "Web of Science 详情页选择器",
+        "ScienceDirect PII 标签",
         "JSON-LD 与引用列表隔离",
         "普通网页标题不被识别为论文"
       ],
@@ -75,7 +77,7 @@
     }
   ],
   "popupLayout": {
-    "date": "2026-10-21",
+    "date": "2026-10-24",
     "reports": [
       {
         "browser": "Chrome for Testing",
@@ -108,5 +110,15 @@
     "actualPopup": true,
     "threeOrdersVisible": true,
     "bottomSettingsReachableByScroll": true
+  },
+  "installedEdgePiiDownload": {
+    "date": "2026-10-24",
+    "actualExtensionVersion": "1.1.2",
+    "actualDownload": true,
+    "source": "https://www.cell.com/action/showPdf?pii=S1550-4131%2826%2900375-X",
+    "pii": "S1550-4131(26)00375-X",
+    "pmid": "42772285",
+    "doi": "10.1016/j.cmet.2026.08.023",
+    "filename": "Cell Metab-2026-A liver-cartilage selenium axis underlies metabolic comorbidity in osteoarthritis.pdf"
   }
 }

@@ -28,8 +28,8 @@ async function apiJson(url) {
     return await response.json();
   } finally {clearTimeout(timeout);}
 }
-async function lookup(doi, pmid) {
-  const key = doi ? 'doi:' + doi.toLowerCase() : 'pmid:' + pmid;
+async function lookup(doi, pmid, pii) {
+  const key = doi ? 'doi:' + doi.toLowerCase() : pmid ? 'pmid:' + pmid : 'pii:' + pii.toLowerCase();
   const cached = (await api.storage.local.get('metadataCache')).metadataCache || {};
   if (cached[key] && Date.now() - cached[key].time < 30 * 86400000) return cached[key].meta;
   if (pendingLookups.has(key)) return pendingLookups.get(key);
@@ -41,10 +41,17 @@ async function lookup(doi, pmid) {
       const date = m['published-print'] || m['published'] || m['published-online'] || m['issued'];
       meta = {doi, title: C.clean(m.title?.[0]), journal: C.clean(m['container-title']?.[0]), abbreviation: C.clean(m['short-container-title']?.[0]), year: C.year(date?.['date-parts']?.[0]?.[0]), issn: m.ISSN?.[0] || ''};
     } else {
+      if (pii) {
+        const search = await apiJson('https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&retmax=2&term=' + encodeURIComponent(pii + '[pii]'));
+        const result = search.esearchresult;
+        if (result?.count !== '1' || result.idlist?.length !== 1) throw new Error('PII not unique');
+        pmid = result.idlist[0];
+      }
       const data = await apiJson('https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&retmode=json&id=' + encodeURIComponent(pmid));
       const m = data.result?.[pmid];
       if (!m || m.uid !== pmid) throw new Error('PMID mismatch');
-      meta = {pmid, title: C.clean(m.title), journal: C.clean(m.fulljournalname), abbreviation: C.clean(m.source), year: C.year(m.pubdate), issn: m.issn || m.essn || '', doi: m.articleids?.find(a => a.idtype === 'doi')?.value || ''};
+      if (pii && C.pii(m.articleids?.find(a => a.idtype === 'pii')?.value) !== pii) throw new Error('PII mismatch');
+      meta = {pmid, pii, title: C.clean(m.title), journal: C.clean(m.fulljournalname), abbreviation: C.clean(m.source), year: C.year(m.pubdate), issn: m.issn || m.essn || '', doi: m.articleids?.find(a => a.idtype === 'doi')?.value || ''};
     }
     await queue(async () => {
       const current = (await api.storage.local.get('metadataCache')).metadataCache || {};
@@ -59,9 +66,9 @@ async function lookup(doi, pmid) {
 }
 async function enrich(meta, config) {
   let result = await abbreviate(meta, config);
-  if (config.online && (result.doi || result.pmid) && (!result.title || !result.year || !result.journal || !result.abbreviation)) {
+  if (config.online && (result.doi || result.pmid || result.pii) && (!result.title || !result.year || !result.journal || !result.abbreviation)) {
     try {
-      const extra = await lookup(result.doi, result.pmid);
+      const extra = await lookup(result.doi, result.pmid, result.pii);
       if (!result.abbreviation) {
         const db = await index();
         extra.abbreviation = db.issns[extra.issn] || db.titles[C.journalKey(extra.journal)] || extra.abbreviation;
@@ -100,9 +107,12 @@ async function resolveDownload(item) {
   let meta = context?.meta || {};
   // A DOI in the download URL is stronger evidence than referrer metadata.
   const downloadDoi = C.doi(item.url) || C.doi(item.finalUrl);
+  const downloadPii = C.pii(item.url) || C.pii(item.finalUrl) || C.pii(item.filename);
   if (downloadDoi && meta.doi && downloadDoi.toLowerCase() !== meta.doi.toLowerCase()) meta = {doi: downloadDoi};
   else if (downloadDoi) meta = C.merge(meta, {doi: downloadDoi});
-  if (!meta.title && !meta.doi && !meta.pmid) {
+  if (downloadPii && meta.pii && downloadPii !== meta.pii) meta = {pii: downloadPii};
+  else if (downloadPii) meta = C.merge(meta, {pii: downloadPii});
+  if (!meta.title && !meta.doi && !meta.pmid && !meta.pii) {
     if (!item.incognito) await history({id: item.id, original: item.filename.split(/[\\/]/).pop(), reason: '未找到可靠的论文信息，保留原名', time: Date.now()});
     return;
   }
@@ -180,7 +190,7 @@ PaperPlatform.listen((message, sender, reply) => {
     if (message.type === 'OVERRIDE') {
       const tab = await api.tabs.get(message.tabId);
       if (C.urlKey(tab.url) !== C.urlKey(message.pageUrl)) throw new Error('页面已切换，请刷新插件');
-      const meta = {title: C.clean(message.meta.title), journal: C.clean(message.meta.journal), abbreviation: C.clean(message.meta.abbreviation), year: C.year(message.meta.year), doi: C.doi(message.meta.doi), pdfUrls: message.meta.pdfUrls || []};
+      const meta = {title: C.clean(message.meta.title), journal: C.clean(message.meta.journal), abbreviation: C.clean(message.meta.abbreviation), year: C.year(message.meta.year), doi: C.doi(message.meta.doi), pii: C.pii(message.meta.pii), pdfUrls: message.meta.pdfUrls || []};
       if (!meta.title) throw new Error('请填写文章标题');
       await queue(async () => {
         const {contexts = [], overrides = {}} = await session.get(['contexts', 'overrides']);
